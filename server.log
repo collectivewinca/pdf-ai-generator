@@ -1,0 +1,6 @@
+
+> pdf-ai-generator@1.0.0 server
+> tsx server.ts
+
+PDF AI Generator API running on http://localhost:3000
+Access via: https://pdf-ai-generator.exe.xyz

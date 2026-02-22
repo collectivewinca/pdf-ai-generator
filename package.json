@@ -1,0 +1,55 @@
+{
+  "name": "pdf-ai-generator",
+  "version": "2.0.0",
+  "description": "AI-powered PDF generation using json-render and react-pdf",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc",
+    "lint": "eslint src/**/*.ts",
+    "example:invoice": "tsx examples/invoice-example.ts",
+    "example:report": "tsx examples/report-example.ts",
+    "start": "node dist/index.js",
+    "server": "tsx server.ts",
+    "server:enhanced": "tsx server-enhanced.ts",
+    "test:workflow": "tsx test-complete-workflow.ts"
+  },
+  "dependencies": {
+    "@json-render/core": "^0.1.0",
+    "@json-render/react": "^0.1.0",
+    "@react-pdf/renderer": "^4.3.2",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "openai": "^6.22.0",
+    "pdf-parse": "^1.1.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0"
+  },
+  "keywords": [
+    "pdf",
+    "ai",
+    "generation",
+    "json-render",
+    "react-pdf",
+    "typescript"
+  ],
+  "author": "PDF AI Generator Team",
+  "license": "MIT"
+}

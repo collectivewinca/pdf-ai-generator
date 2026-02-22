@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF AI Generator - Complete Guide</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.7;
+      color: #333;
+      background: #0f0f0f;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #1a1a1a;
+      padding: 50px;
+      border-radius: 16px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    }
+    h1 {
+      font-size: 2.5em;
+      color: #fff;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .tagline {
+      font-size: 1.3em;
+      color: #888;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #333;
+    }
+    .highlight {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+    h2 {
+      font-size: 1.6em;
+      color: #fff;
+      margin: 45px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #333;
+      font-weight: 600;
+    }
+    h3 {
+      font-size: 1.2em;
+      color: #a78bfa;
+      margin: 30px 0 15px;
+      font-weight: 600;
+    }
+    p { color: #ccc; margin-bottom: 15px; }
+    code {
+      background: #2d2d2d;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 0.9em;
+      color: #f472b6;
+    }
+    pre {
+      background: #0d0d0d;
+      color: #a5b4fc;
+      padding: 20px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 20px 0;
+      font-size: 0.85em;
+      border: 1px solid #333;
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+    .url {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 1.1em;
+      color: white;
+      margin: 15px 0;
+      font-weight: 500;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 25px 0;
+    }
+    .feature-card {
+      background: #252525;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 25px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .feature-card:hover {
+      transform: translateY(-3px);
+      border-color: #667eea;
+    }
+    .feature-card h4 {
+      color: #fff;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .feature-card p { color: #888; font-size: 0.9em; margin: 0; }
+    .emoji { font-size: 1.3em; }
+    .badge {
+      display: inline-block;
+      background: #374151;
+      color: #9ca3af;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75em;
+      font-weight: 500;
+      margin-right: 5px;
+    }
+    .badge.get { background: #065f46; color: #6ee7b7; }
+    .badge.post { background: #1e40af; color: #93c5fd; }
+    .endpoint {
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+    }
+    .endpoint .method {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.85em;
+      margin-right: 12px;
+    }
+    .endpoint .method.post { background: #3b82f6; color: white; }
+    .endpoint .method.get { background: #10b981; color: white; }
+    .endpoint .path {
+      font-family: monospace;
+      font-size: 1em;
+      color: #e5e7eb;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      background: #1f1f1f;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+    th {
+      background: #252525;
+      color: #9ca3af;
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+    tr:hover { background: #252525; }
+    .example-box {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      border: 1px solid #4f46e5;
+      padding: 25px;
+      margin: 20px 0;
+      border-radius: 12px;
+    }
+    .example-box h4 { color: #a5b4fc; margin-bottom: 15px; font-weight: 600; }
+    .section-icon { margin-right: 10px; }
+    hr { border: none; border-top: 1px solid #333; margin: 40px 0; }
+    .footer { text-align: center; color: #666; font-size: 0.9em; margin-top: 40px; }
+    @media (max-width: 600px) {
+      .container { padding: 30px 20px; }
+      h1 { font-size: 1.8em; }
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PDF AI Generator</h1>
+    <p class="tagline"><span class="highlight">JSON-Render</span> + <span class="highlight">AI Assistant</span> - Next Gen PDF Creation</p>
+
+    <h2><span class="section-icon">🚀</span> Quick Start</h2>
+    <div class="url">https://pdf-ai-generator.exe.xyz:3005</div>
+
+    <h2><span class="section-icon">✨</span> New Features</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h4><span class="emoji">📦</span> JSON-Render</h4>
+        <p>Component catalog that maps JSON specs to React-PDF. Define once, use everywhere.</p>
+      </div>
+      <div class="feature-card">
+        <h4><span class="emoji">🤖</span> AI Assistant</h4>
+        <p>Natural language helper. Tell it what you want, it creates the perfect request.</p>
+      </div>
+      <div class="feature-card">
+        <h4><span class="emoji">💬</span> Chat Interface</h4>
+        <p>Conversation-based PDF creation. Like having a helpful assistant by your side.</p>
+      </div>
+      <div class="feature-card">
+        <h4><span class="emoji">🔗</span> Type-Safe</h4>
+        <p>Zod validation + JSON-Render schemas. Your PDFs are guaranteed to work.</p>
+      </div>
+    </div>
+
+    <h2><span class="section-icon">🤖</span> AI Assistant</h2>
+    <p>The AI Assistant helps users create perfect PDF requests. Just tell it what you need!</p>
+
+    <h3>How It Works</h3>
+    <pre><code># Tell the AI what you want
+"I need an invoice for $500 web design"
+
+# AI responds with:
+{
+  "pdfType": "invoice",
+  "description": "Invoice for $500 web design services...",
+  "suggestions": ["Add company name", "Include invoice number"]
+}</code></pre>
+
+    <h3>AI Assistant Endpoints</h3>
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="path">/api/assistant/understand</span>
+    </div>
+    <p>Understand user request and suggest best PDF type</p>
+
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="path">/api/assistant/chat</span>
+    </div>
+    <p>Chat with the AI assistant about PDF creation</p>
+
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="path">/api/assistant/generate</span>
+    </div>
+    <p>Generate a complete PDF request from natural language</p>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/assistant/types</span>
+    </div>
+    <p>Get available PDF types (invoice, receipt, letter, etc.)</p>
+
+    <h3>Example: Chat with AI</h3>
+    <pre><code>curl -X POST https://pdf-ai-generator.exe.xyz:3005/api/assistant/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "I want to create an invoice for my client"
+  }'</code></pre>
+
+    <h2><span class="section-icon">📦</span> JSON-Render Integration</h2>
+    <p>JSON-Render provides a component catalog that defines how JSON specs map to React-PDF components.</p>
+
+    <h3>Available Components</h3>
+    <table>
+      <tr>
+        <th>Component</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><code>Document</code></td>
+        <td>Root PDF container with metadata</td>
+      </tr>
+      <tr>
+        <td><code>Page</code></td>
+        <td>Individual pages (A4, Letter, etc.)</td>
+      </tr>
+      <tr>
+        <td><code>Text</code></td>
+        <td>Text content with styling</td>
+      </tr>
+      <tr>
+        <td><code>View</code></td>
+        <td>Container for grouping elements</td>
+      </tr>
+      <tr>
+        <td><code>Image</code></td>
+        <td>Images and logos</td>
+      </tr>
+      <tr>
+        <td><code>Table</code></td>
+        <td>Tabular data</td>
+      </tr>
+    </table>
+
+    <h3>JSON-Render Endpoints</h3>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/json-render/catalog</span>
+    </div>
+    <p>Get the PDF component catalog</p>
+
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <span class="path">/api/json-render/render</span>
+    </div>
+    <p>Render PDF using JSON-Render catalog</p>
+
+    <h3>Get Catalog</h3>
+    <pre><code>curl https://pdf-ai-generator.exe.xyz:3005/api/json-render/catalog</code></pre>
+
+    <h3>Response</h3>
+    <pre><code>{
+  "name": "PDF Components",
+  "description": "JSON-Render catalog for PDF generation",
+  "components": ["Document", "Page", "Text", "View", "Image", "Table", "TableRow", "TableCell"],
+  "version": "1.0.0"
+}</code></pre>
+
+    <h2><span class="section-icon">📋</span> Complete API Reference</h2>
+    <table>
+      <tr>
+        <th>Endpoint</th>
+        <th>Method</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><code>/api/health</code></td>
+        <td><span class="badge get">GET</span></td>
+        <td>Health check</td>
+      </tr>
+      <tr>
+        <td><code>/api/test-pdf</code></td>
+        <td><span class="badge get">GET</span></td>
+        <td>Test PDF generation</td>
+      </tr>
+      <tr>
+        <td><code>/api/complete-workflow</code></td>
+        <td><span class="badge post">POST</span></td>
+        <td>Complete AI→PDF workflow</td>
+      </tr>
+      <tr>
+        <td><code>/api/json-render/catalog</code></td>
+        <td><span class="badge get">GET</span></td>
+        <td>Get component catalog</td>
+      </tr>
+      <tr>
+        <td><code>/api/json-render/render</code></td>
+        <td><span class="badge post">POST</span></td>
+        <td>Render with JSON-Render</td>
+      </tr>
+      <tr>
+        <td><code>/api/assistant/understand</code></td>
+        <td><span class="badge post">POST</span></td>
+        <td>Understand user request</td>
+      </tr>
+      <tr>
+        <td><code>/api/assistant/chat</code></td>
+        <td><span class="badge post">POST</span></td>
+        <td>Chat with AI assistant</td>
+      </tr>
+      <tr>
+        <td><code>/api/assistant/generate</code></td>
+        <td><span class="badge post">POST</span></td>
+        <td>Generate complete request</td>
+      </tr>
+      <tr>
+        <td><code>/api/assistant/types</code></td>
+        <td><span class="badge get">GET</span></td>
+        <td>Get PDF types</td>
+      </tr>
+    </table>
+
+    <h2><span class="section-icon">💡</span> Usage Examples</h2>
+
+    <div class="example-box">
+      <h4>Example 1: Simple Chat</h4>
+      <pre><code>curl -X POST https://pdf-ai-generator.exe.xyz:3005/api/assistant/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "I need a receipt for $100"}'</code></pre>
+    </div>
+
+    <div class="example-box">
+      <h4>Example 2: Generate Complete Request</h4>
+      <pre><code>curl -X POST https://pdf-ai-generator.exe.xyz:3005/api/assistant/generate \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Create an invoice for consulting work"}'</code></pre>
+    </div>
+
+    <div class="example-box">
+      <h4>Example 3: JSON-Render Workflow</h4>
+      <pre><code># Get the catalog
+curl https://pdf-ai-generator.exe.xyz:3005/api/json-render/catalog
+
+# Render with JSON-Render
+curl -X POST https://pdf-ai-generator.exe.xyz:3005/api/json-render/render \
+  -H "Content-Type: application/json" \
+  -d '{"spec": {"type": "Document", ...}}'</code></pre>
+    </div>
+
+    <h2><span class="section-icon">🏗️</span> Architecture</h2>
+    <pre><code>User Request
+     ↓
+┌─────────────────────────────────────────┐
+│         AI ASSISTANT                     │
+│  • Understand natural language          │
+│  • Suggest PDF type                      │
+│  • Improve descriptions                  │
+│  • Chat interaction                      │
+└─────────────────────────────────────────┘
+     ↓
+┌─────────────────────────────────────────┐
+│         JSON-RENDER CATALOG             │
+│  • Document, Page, Text, View, Table     │
+│  • Component mapping                     │
+│  • Schema validation                     │
+└─────────────────────────────────────────┘
+     ↓
+┌─────────────────────────────────────────┐
+│         REACT-PDF                        │
+│  • Stream handling                       │
+│  • PDF generation                        │
+└─────────────────────────────────────────┘
+     ↓
+      PDF Output</code></pre>
+
+    <hr>
+
+    <div class="footer">
+      <p><strong>Version:</strong> 5.0.0</p>
+      <p><strong>Features:</strong> JSON-Render + AI Assistant</p>
+      <p><strong>Date:</strong> February 2026</p>
+    </div>
+  </div>
+</body>
+</html>
