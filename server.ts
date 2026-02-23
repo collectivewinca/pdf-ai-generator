@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import cors from 'cors';
 import { createCatalog, generateCatalogPrompt } from '@json-render/core';
 import { renderToBuffer, renderToStream, standardComponentDefinitions, defineRegistry, schema } from '@json-render/react-pdf';
@@ -14,6 +15,7 @@ const deepseek = deepseekKey ? new DeepseekReal(deepseekKey) : null;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(express.static('public'));
 
 // --- json-render Catalog ---
 
@@ -50,7 +52,9 @@ IMPORTANT: Return ONLY the JSON spec. No explanations, no markdown fences.`;
 
 // --- Routes ---
 
-app.get('/', (req, res) => {
+// Landing page served by express.static('public')
+// JSON info endpoint moved to /api/info
+app.get('/api/info', (req, res) => {
   res.json({
     name: 'PDF AI Generator',
     version: '4.0.0',

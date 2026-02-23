@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF AI Generator — VE LAB</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #000000;
+      --card: #111111;
+      --border: #1f2937;
+      --muted: #9ca3af;
+      --white: #ffffff;
+      --amber: #fbbf24;
+      --amber-dark: #f59e0b;
+      --amber-light: #fcd34d;
+      --cyan: #00ffff;
+      --magenta: #ff00ff;
+      --gold: #ffd400;
+      --green: #00ff6a;
+      --success: #4ade80;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--white);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* --- NAV --- */
+    nav {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    nav .logo {
+      height: 32px;
+      opacity: 0.9;
+    }
+    nav .nav-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+    nav .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    nav .nav-links a:hover { color: var(--amber); }
+
+    /* --- HERO --- */
+    .hero {
+      padding: 100px 0 80px;
+      text-align: center;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--amber);
+      margin-bottom: 24px;
+      letter-spacing: 0.5px;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .hero h1 .accent {
+      background: linear-gradient(135deg, var(--amber) 0%, var(--gold) 50%, var(--amber-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero .tagline {
+      font-size: 1.25rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: var(--amber);
+      color: #000;
+      font-weight: 700;
+      font-size: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .hero-cta:hover { background: var(--amber-light); transform: translateY(-1px); }
+
+    /* --- SECTIONS --- */
+    section {
+      padding: 80px 0;
+    }
+    .section-label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--amber);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .section-desc {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin-bottom: 48px;
+    }
+
+    /* --- HOW IT WORKS --- */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 24px;
+      text-align: center;
+      position: relative;
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: rgba(251,191,36,0.1);
+      color: var(--amber);
+      font-weight: 800;
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+    }
+    .step h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .step p {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .step-arrow {
+      position: absolute;
+      right: -18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--border);
+      font-size: 24px;
+    }
+
+    /* --- COMPONENTS GRID --- */
+    .components-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .comp-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+    .comp-card:hover { border-color: var(--amber); }
+    .comp-card .comp-name {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--amber);
+      margin-bottom: 4px;
+    }
+    .comp-card .comp-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* --- MOTION SIGNATURES --- */
+    .sig-section {
+      border-top: 1px solid var(--border);
+    }
+    .sig-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .sig-visual {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .sig-visual::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--gold), var(--green));
+      animation: glow-sweep 6s linear infinite;
+    }
+    @keyframes glow-sweep {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    .sig-visual svg {
+      width: 220px;
+      opacity: 0.85;
+    }
+    .sig-pen-path {
+      stroke: var(--amber);
+      stroke-width: 2;
+      fill: none;
+      stroke-dasharray: 400;
+      stroke-dashoffset: 400;
+      animation: draw-sig 3s ease-in-out infinite;
+    }
+    @keyframes draw-sig {
+      0% { stroke-dashoffset: 400; opacity: 0.3; }
+      50% { stroke-dashoffset: 0; opacity: 1; }
+      80% { stroke-dashoffset: 0; opacity: 1; }
+      100% { stroke-dashoffset: 400; opacity: 0.3; }
+    }
+    .sig-features {
+      list-style: none;
+    }
+    .sig-features li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .sig-features li:last-child { border-bottom: none; }
+    .sig-features .bullet {
+      color: var(--amber);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .sig-features .feat-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .sig-features .feat-desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* --- LIVE DEMO --- */
+    .demo-section {
+      border-top: 1px solid var(--border);
+    }
+    .demo-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 700px;
+    }
+    .demo-box textarea {
+      width: 100%;
+      min-height: 100px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      color: var(--white);
+      font-family: var(--font);
+      font-size: 15px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .demo-box textarea:focus { border-color: var(--amber); }
+    .demo-box textarea::placeholder { color: #555; }
+    .demo-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .btn-generate {
+      padding: 12px 28px;
+      background: var(--amber);
+      color: #000;
+      font-weight: 700;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-generate:hover { background: var(--amber-light); }
+    .btn-generate:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .demo-status {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .demo-status.success { color: var(--success); }
+    .demo-status.error { color: #f87171; }
+    .demo-examples {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .demo-example {
+      padding: 6px 12px;
+      background: rgba(251,191,36,0.08);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .demo-example:hover {
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+
+    /* --- API REFERENCE --- */
+    .api-section {
+      border-top: 1px solid var(--border);
+    }
+    .api-cards {
+      display: grid;
+      gap: 12px;
+    }
+    .api-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 16px;
+      align-items: center;
+    }
+    .method {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .method.get { background: rgba(74,222,128,0.15); color: var(--success); }
+    .method.post { background: rgba(251,191,36,0.15); color: var(--amber); }
+    .api-path {
+      font-family: var(--mono);
+      font-size: 14px;
+    }
+    .api-desc {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .code-block {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 24px;
+      overflow-x: auto;
+    }
+    .code-block code {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .code-block .kw { color: var(--amber); }
+    .code-block .str { color: var(--success); }
+    .code-block .comment { color: #555; }
+
+    /* --- FOOTER --- */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    footer .footer-logo {
+      height: 24px;
+      opacity: 0.6;
+      margin-bottom: 12px;
+    }
+    footer p {
+      color: #555;
+      font-size: 13px;
+    }
+    footer a {
+      color: var(--amber);
+      text-decoration: none;
+    }
+    footer a:hover { text-decoration: underline; }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 768px) {
+      .steps { grid-template-columns: 1fr; }
+      .step-arrow { display: none; }
+      .sig-layout { grid-template-columns: 1fr; }
+      .api-card { grid-template-columns: auto 1fr; }
+      .api-desc { grid-column: 1 / -1; text-align: left; }
+      nav .nav-links { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <img src="https://raw.githubusercontent.com/collectivewinca/vey0/main/velogosvg/3_clean.svg" alt="VE LAB" class="logo">
+      <ul class="nav-links">
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#components">Components</a></li>
+        <li><a href="#signatures">Signatures</a></li>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#api">API</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">json-render + react-pdf + Deepseek AI</div>
+      <h1>
+        <span class="accent">PDF AI Generator</span>
+      </h1>
+      <p class="tagline">
+        Describe it. AI generates it. Download the PDF.<br>
+        14 components. Motion signatures. One API call.
+      </p>
+      <a href="#demo" class="hero-cta">Try the Demo</a>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="container">
+      <div class="section-label">How It Works</div>
+      <h2 class="section-title">Three steps to a PDF</h2>
+      <p class="section-desc">
+        Describe what you need in plain language. The AI generates a structured JSON spec constrained to our component catalog. React-PDF renders it to a downloadable file.
+      </p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Describe</h3>
+          <p>Tell the API what you need: "Create an invoice for 5 hours consulting at $200/hr for Acme Corp"</p>
+          <span class="step-arrow">&rarr;</span>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>AI Generates</h3>
+          <p>Deepseek AI produces a validated JSON spec using 14 typed components — Table, Heading, Image, Link, and more</p>
+          <span class="step-arrow">&rarr;</span>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Download PDF</h3>
+          <p>json-render + react-pdf renders the spec server-side. You get a real PDF file — no browser, no puppeteer</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPONENTS -->
+  <section id="components">
+    <div class="container">
+      <div class="section-label">Component Catalog</div>
+      <h2 class="section-title">14 standard PDF components</h2>
+      <p class="section-desc">
+        Powered by <code style="color:var(--amber)">@json-render/react-pdf</code>. Every component is type-safe with Zod schemas. The AI is constrained to this catalog — no hallucinated layouts.
+      </p>
+      <div class="components-grid">
+        <div class="comp-card">
+          <div class="comp-name">Document</div>
+          <div class="comp-desc">Root PDF wrapper with title, author, subject metadata</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Page</div>
+          <div class="comp-desc">A4, Letter, Legal with portrait or landscape</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Heading</div>
+          <div class="comp-desc">h1 through h4 with automatic sizing</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Text</div>
+          <div class="comp-desc">Body text with font size, color, weight, alignment</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Table</div>
+          <div class="comp-desc">Typed columns with headers, alignment, striping, colors</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Image</div>
+          <div class="comp-desc">From URL or base64 with sizing controls</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Link</div>
+          <div class="comp-desc">Clickable hyperlinks with text and href</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">List</div>
+          <div class="comp-desc">Ordered or unordered with nested items</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">View</div>
+          <div class="comp-desc">Generic container with padding, margin, background</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Row</div>
+          <div class="comp-desc">Horizontal flex layout with gap and alignment</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Column</div>
+          <div class="comp-desc">Vertical flex layout with gap and alignment</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Divider</div>
+          <div class="comp-desc">Horizontal line separator</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">Spacer</div>
+          <div class="comp-desc">Empty vertical space between elements</div>
+        </div>
+        <div class="comp-card">
+          <div class="comp-name">PageNumber</div>
+          <div class="comp-desc">Current page and total page count</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOTION SIGNATURES -->
+  <section id="signatures" class="sig-section">
+    <div class="container">
+      <div class="section-label">Motion Signatures</div>
+      <h2 class="section-title">Animated signatures for documents</h2>
+      <p class="section-desc">
+        Powered by <code style="color:var(--amber)">ve-animesign-pdf</code> — render handwritten signature animations as PNG or MP4, then embed them into your generated PDFs.
+      </p>
+      <div class="sig-layout">
+        <div class="sig-visual">
+          <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- Animated signature path -->
+            <path class="sig-pen-path" d="M30,80 C40,30 60,20 80,60 S100,90 120,50 S160,10 180,50 S200,80 220,40 C240,10 260,30 270,60" />
+            <!-- Signature line -->
+            <line x1="20" y1="100" x2="280" y2="100" stroke="#333" stroke-width="1" />
+          </svg>
+          <p style="color:var(--muted);font-size:13px;margin-top:12px;">Animated pen-writing effect</p>
+        </div>
+        <div>
+          <ul class="sig-features">
+            <li>
+              <span class="bullet">&rarr;</span>
+              <div>
+                <div class="feat-title">Rendered as PNG or MP4</div>
+                <div class="feat-desc">Static image for PDFs, animated video for previews and web</div>
+              </div>
+            </li>
+            <li>
+              <span class="bullet">&rarr;</span>
+              <div>
+                <div class="feat-title">Customizable appearance</div>
+                <div class="feat-desc">Signature color, background, padding, fade-in frames, dimensions</div>
+              </div>
+            </li>
+            <li>
+              <span class="bullet">&rarr;</span>
+              <div>
+                <div class="feat-title">Runtime integration</div>
+                <div class="feat-desc">SignatureRuntimeClient connects to ve-animesign-pdf service with auto-retry and configurable timeout</div>
+              </div>
+            </li>
+            <li>
+              <span class="bullet">&rarr;</span>
+              <div>
+                <div class="feat-title">PDF embedding</div>
+                <div class="feat-desc">Signature renders as Image component in the json-render spec — works with contracts, invoices, letters</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE DEMO -->
+  <section id="demo" class="demo-section">
+    <div class="container">
+      <div class="section-label">Live Demo</div>
+      <h2 class="section-title">Generate a PDF right now</h2>
+      <p class="section-desc">
+        Type a description below. The API calls Deepseek AI, generates a json-render spec, renders it with react-pdf, and returns a downloadable PDF file.
+      </p>
+      <div class="demo-box">
+        <textarea id="demo-input" placeholder="Example: Create an invoice for 3 hours web development at $150/hr for Acme Corp, due in 30 days"></textarea>
+        <div class="demo-actions">
+          <button class="btn-generate" id="demo-btn" onclick="generatePdf()">Generate PDF</button>
+          <span class="demo-status" id="demo-status"></span>
+        </div>
+        <div class="demo-examples">
+          <span class="demo-example" onclick="setExample('Create an invoice for 5 hours consulting at $200/hr for Acme Corp')">Invoice</span>
+          <span class="demo-example" onclick="setExample('Generate a receipt for $127.50 coffee order from Bean Counter Cafe')">Receipt</span>
+          <span class="demo-example" onclick="setExample('Write a business letter from VE LAB to Acme Corp about a partnership proposal')">Letter</span>
+          <span class="demo-example" onclick="setExample('Create a monthly sales report for January 2026 with sample data')">Report</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- API REFERENCE -->
+  <section id="api" class="api-section">
+    <div class="container">
+      <div class="section-label">API Reference</div>
+      <h2 class="section-title">REST endpoints</h2>
+      <p class="section-desc">
+        All endpoints are available at the server root. JSON in, PDF or JSON out.
+      </p>
+      <div class="api-cards">
+        <div class="api-card">
+          <span class="method get">GET</span>
+          <span class="api-path">/api/health</span>
+          <span class="api-desc">Health check — returns status, version, component count</span>
+        </div>
+        <div class="api-card">
+          <span class="method get">GET</span>
+          <span class="api-path">/api/catalog</span>
+          <span class="api-desc">View all available PDF components and their schemas</span>
+        </div>
+        <div class="api-card">
+          <span class="method post">POST</span>
+          <span class="api-path">/api/generate</span>
+          <span class="api-desc">Natural language &rarr; AI &rarr; PDF file (binary response)</span>
+        </div>
+        <div class="api-card">
+          <span class="method post">POST</span>
+          <span class="api-path">/api/render</span>
+          <span class="api-desc">JSON spec &rarr; PDF file (bring your own spec)</span>
+        </div>
+        <div class="api-card">
+          <span class="method post">POST</span>
+          <span class="api-path">/api/complete-workflow</span>
+          <span class="api-desc">Natural language &rarr; AI &rarr; JSON spec (no render)</span>
+        </div>
+        <div class="api-card">
+          <span class="method post">POST</span>
+          <span class="api-path">/api/assistant/chat</span>
+          <span class="api-desc">Chat with the AI assistant about PDF creation</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <code>
+          <span class="comment"># Generate a PDF from natural language</span><br>
+          <span class="kw">curl</span> -X POST <span class="str">http://pdf-ai-generator.exe.xyz:3005/api/generate</span> \<br>
+          &nbsp;&nbsp;-H <span class="str">"Content-Type: application/json"</span> \<br>
+          &nbsp;&nbsp;-d <span class="str">'{"message":"Create an invoice for 5 hours at $200/hr"}'</span> \<br>
+          &nbsp;&nbsp;-o invoice.pdf<br><br>
+          <span class="comment"># Render your own spec</span><br>
+          <span class="kw">curl</span> -X POST <span class="str">http://pdf-ai-generator.exe.xyz:3005/api/render</span> \<br>
+          &nbsp;&nbsp;-H <span class="str">"Content-Type: application/json"</span> \<br>
+          &nbsp;&nbsp;-d <span class="str">'{"spec":{"root":"doc","elements":{"doc":{"type":"Document",...}}}}'</span> \<br>
+          &nbsp;&nbsp;-o document.pdf
+        </code>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <img src="https://raw.githubusercontent.com/collectivewinca/vey0/main/velogosvg/3_clean.svg" alt="VE LAB" class="footer-logo"><br>
+      <p>
+        PDF AI Generator v4.0 &mdash; <a href="https://github.com/collectivewinca/pdf-ai-generator">GitHub</a>
+        &nbsp;&middot;&nbsp; Powered by json-render + react-pdf + Deepseek
+        &nbsp;&middot;&nbsp; A <a href="https://collectivewinca.github.io/vey0/">VE LAB</a> project
+      </p>
+    </div>
+  </footer>
+
+  <!-- DEMO SCRIPT -->
+  <script>
+    function setExample(text) {
+      document.getElementById('demo-input').value = text;
+    }
+
+    async function generatePdf() {
+      const input = document.getElementById('demo-input');
+      const btn = document.getElementById('demo-btn');
+      const status = document.getElementById('demo-status');
+      const message = input.value.trim();
+
+      if (!message) {
+        status.textContent = 'Please describe the PDF you want.';
+        status.className = 'demo-status error';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+      status.textContent = 'Calling AI + rendering PDF...';
+      status.className = 'demo-status';
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Generation failed');
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        // Extract filename from Content-Disposition header
+        const disposition = response.headers.get('Content-Disposition');
+        let filename = 'document.pdf';
+        if (disposition) {
+          const match = disposition.match(/filename="?([^"]+)"?/);
+          if (match) filename = match[1];
+        }
+
+        // Trigger download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        const sizeKb = (blob.size / 1024).toFixed(1);
+        status.textContent = `PDF downloaded (${sizeKb} KB)`;
+        status.className = 'demo-status success';
+      } catch (err) {
+        status.textContent = err.message;
+        status.className = 'demo-status error';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generate PDF';
+      }
+    }
+
+    // Allow Ctrl+Enter to generate
+    document.getElementById('demo-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        generatePdf();
+      }
+    });
+  </script>
+
+</body>
+</html>
