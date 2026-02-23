@@ -1,12 +1,10 @@
-import {
-  SignatureRuntimeClient,
-  type RenderSignatureResponse,
-} from '../src/integrations/signature-runtime-client';
+import { SignatureRuntimeClient } from '../src/integrations/signature-runtime-client';
 
 async function main() {
   const baseUrl = process.env.SIGNATURE_RUNTIME_URL ?? 'http://127.0.0.1:3210';
   const client = new SignatureRuntimeClient({
     baseUrl,
+    apiKey: process.env.RENDER_API_KEY,
     timeoutMs: 180000,
     retries: 2,
   });
@@ -14,7 +12,12 @@ async function main() {
   const health = await client.health();
   console.log('Signature runtime health:', health);
 
-  const result: RenderSignatureResponse = await client.renderSignature({
+  // List available compositions
+  const compositions = await client.listCompositions();
+  console.log('Available compositions:', compositions.map((c) => c.id));
+
+  // Render via convenience method
+  const result = await client.renderSignature({
     format: 'png',
     durationInFrames: 120,
     props: {
@@ -25,9 +28,9 @@ async function main() {
 
   console.log('Render created:');
   console.log('  id:', result.id);
+  console.log('  compositionId:', result.compositionId);
   console.log('  format:', result.format);
   console.log('  url:', result.url);
-  console.log('  path:', result.path);
 }
 
 main().catch((error) => {

@@ -13,6 +13,7 @@
     "example:invoice": "tsx examples/invoice-example.ts",
     "example:report": "tsx examples/report-example.ts",
     "example:signature-runtime": "tsx examples/signature-runtime-example.ts",
+    "example:stamp-seal": "tsx examples/stamp-seal-example.ts",
     "start": "node dist/index.js",
     "server": "tsx server.ts",
     "server:enhanced": "tsx server-enhanced.ts",
