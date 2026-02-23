@@ -227,75 +227,138 @@
     .sig-section {
       border-top: 1px solid var(--border);
     }
-    .sig-layout {
+    .sig-gallery {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 48px;
-      align-items: center;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
     }
-    .sig-visual {
+    .sig-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 40px;
+      padding: 24px 20px 16px;
       text-align: center;
       position: relative;
       overflow: hidden;
+      transition: border-color 0.3s;
     }
-    .sig-visual::after {
+    .sig-card:hover { border-color: var(--amber); }
+    .sig-card.yours {
+      border-color: rgba(251,191,36,0.3);
+      background: linear-gradient(135deg, var(--card) 0%, rgba(251,191,36,0.05) 100%);
+    }
+    .sig-card::after {
       content: '';
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      height: 3px;
+      height: 2px;
       background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--gold), var(--green));
-      animation: glow-sweep 6s linear infinite;
+      background-size: 200% 100%;
+      animation: glow-sweep 4s linear infinite;
+      opacity: 0;
+      transition: opacity 0.3s;
     }
+    .sig-card:hover::after { opacity: 1; }
     @keyframes glow-sweep {
       0% { background-position: 0% 50%; }
       100% { background-position: 200% 50%; }
     }
-    .sig-visual svg {
-      width: 220px;
-      opacity: 0.85;
+    .sig-card svg {
+      width: 100%;
+      height: 60px;
+      margin-bottom: 12px;
     }
     .sig-pen-path {
-      stroke: var(--amber);
-      stroke-width: 2;
       fill: none;
-      stroke-dasharray: 400;
-      stroke-dashoffset: 400;
-      animation: draw-sig 3s ease-in-out infinite;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
-    @keyframes draw-sig {
-      0% { stroke-dashoffset: 400; opacity: 0.3; }
-      50% { stroke-dashoffset: 0; opacity: 1; }
-      80% { stroke-dashoffset: 0; opacity: 1; }
-      100% { stroke-dashoffset: 400; opacity: 0.3; }
-    }
-    .sig-features {
-      list-style: none;
-    }
-    .sig-features li {
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-    .sig-features li:last-child { border-bottom: none; }
-    .sig-features .bullet {
-      color: var(--amber);
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-    .sig-features .feat-title {
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-    .sig-features .feat-desc {
+    .sig-card .sig-name {
+      font-size: 12px;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-style: italic;
     }
+    .sig-card .sig-line {
+      width: 80%;
+      height: 1px;
+      background: var(--border);
+      margin: 8px auto 6px;
+    }
+    /* Staggered drawing animation per card */
+    .sig-card:nth-child(1) .sig-pen-path { stroke: var(--amber); stroke-width: 2.2; stroke-dasharray: 500; stroke-dashoffset: 500; animation: draw-sig 3.5s ease-in-out 0s infinite; }
+    .sig-card:nth-child(2) .sig-pen-path { stroke: var(--cyan); stroke-width: 2; stroke-dasharray: 450; stroke-dashoffset: 450; animation: draw-sig2 3.8s ease-in-out 0.4s infinite; }
+    .sig-card:nth-child(3) .sig-pen-path { stroke: var(--magenta); stroke-width: 2.5; stroke-dasharray: 480; stroke-dashoffset: 480; animation: draw-sig3 3.2s ease-in-out 0.8s infinite; }
+    .sig-card:nth-child(4) .sig-pen-path { stroke: var(--green); stroke-width: 1.8; stroke-dasharray: 420; stroke-dashoffset: 420; animation: draw-sig4 4s ease-in-out 1.2s infinite; }
+    .sig-card:nth-child(5) .sig-pen-path { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 400; stroke-dashoffset: 400; animation: draw-sig5 3s ease-in-out 0s infinite; }
+
+    @keyframes draw-sig {
+      0% { stroke-dashoffset: 500; opacity: 0.2; }
+      40% { stroke-dashoffset: 0; opacity: 1; }
+      75% { stroke-dashoffset: 0; opacity: 1; }
+      100% { stroke-dashoffset: 500; opacity: 0.2; }
+    }
+    @keyframes draw-sig2 {
+      0% { stroke-dashoffset: 450; opacity: 0.2; }
+      45% { stroke-dashoffset: 0; opacity: 1; }
+      78% { stroke-dashoffset: 0; opacity: 1; }
+      100% { stroke-dashoffset: 450; opacity: 0.2; }
+    }
+    @keyframes draw-sig3 {
+      0% { stroke-dashoffset: 480; opacity: 0.2; }
+      38% { stroke-dashoffset: 0; opacity: 1; }
+      72% { stroke-dashoffset: 0; opacity: 1; }
+      100% { stroke-dashoffset: 480; opacity: 0.2; }
+    }
+    @keyframes draw-sig4 {
+      0% { stroke-dashoffset: 420; opacity: 0.2; }
+      42% { stroke-dashoffset: 0; opacity: 1; }
+      80% { stroke-dashoffset: 0; opacity: 1; }
+      100% { stroke-dashoffset: 420; opacity: 0.2; }
+    }
+    @keyframes draw-sig5 {
+      0% { stroke-dashoffset: 400; opacity: 0.15; }
+      50% { stroke-dashoffset: 0; opacity: 0.6; }
+      80% { stroke-dashoffset: 0; opacity: 0.6; }
+      100% { stroke-dashoffset: 400; opacity: 0.15; }
+    }
+
+    .sig-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .sig-info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+    }
+    .sig-info-card h4 {
+      font-size: 14px;
+      color: var(--amber);
+      margin-bottom: 8px;
+    }
+    .sig-info-card p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .format-badges {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .format-badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .format-badge.png { background: rgba(251,191,36,0.15); color: var(--amber); }
+    .format-badge.mp4 { background: rgba(0,255,255,0.1); color: var(--cyan); }
+    .format-badge.gif { background: rgba(255,0,255,0.1); color: var(--magenta); }
 
     /* --- LIVE DEMO --- */
     .demo-section {
@@ -454,7 +517,8 @@
     @media (max-width: 768px) {
       .steps { grid-template-columns: 1fr; }
       .step-arrow { display: none; }
-      .sig-layout { grid-template-columns: 1fr; }
+      .sig-gallery { grid-template-columns: repeat(2, 1fr); }
+      .sig-info { grid-template-columns: 1fr; }
       .api-card { grid-template-columns: auto 1fr; }
       .api-desc { grid-column: 1 / -1; text-align: left; }
       nav .nav-links { gap: 16px; }
@@ -597,49 +661,80 @@
       <div class="section-label">Motion Signatures</div>
       <h2 class="section-title">Animated signatures for documents</h2>
       <p class="section-desc">
-        Powered by <code style="color:var(--amber)">ve-animesign-pdf</code> — render handwritten signature animations as PNG or MP4, then embed them into your generated PDFs.
+        Powered by <code style="color:var(--amber)">ve-animesign-pdf</code> — render handwritten signature animations as PNG, MP4, or GIF, then embed them into your generated PDFs.
       </p>
-      <div class="sig-layout">
-        <div class="sig-visual">
-          <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
-            <!-- Animated signature path -->
-            <path class="sig-pen-path" d="M30,80 C40,30 60,20 80,60 S100,90 120,50 S160,10 180,50 S200,80 220,40 C240,10 260,30 270,60" />
-            <!-- Signature line -->
-            <line x1="20" y1="100" x2="280" y2="100" stroke="#333" stroke-width="1" />
+
+      <!-- Signature Gallery -->
+      <div class="sig-gallery">
+        <!-- Mlon Eusk - bold, angular strokes -->
+        <div class="sig-card">
+          <svg viewBox="0 0 220 70" xmlns="http://www.w3.org/2000/svg">
+            <path class="sig-pen-path" d="M15,55 L15,15 L25,55 L35,15 L45,55 M55,55 L55,15 M55,15 L75,15 M55,35 L70,35 M55,55 L75,55 M120,15 C105,15 95,25 95,35 S105,55 120,55 S145,45 145,35 S135,15 120,15" />
           </svg>
-          <p style="color:var(--muted);font-size:13px;margin-top:12px;">Animated pen-writing effect</p>
+          <div class="sig-line"></div>
+          <div class="sig-name">Mlon Eusk</div>
         </div>
-        <div>
-          <ul class="sig-features">
-            <li>
-              <span class="bullet">&rarr;</span>
-              <div>
-                <div class="feat-title">Rendered as PNG or MP4</div>
-                <div class="feat-desc">Static image for PDFs, animated video for previews and web</div>
-              </div>
-            </li>
-            <li>
-              <span class="bullet">&rarr;</span>
-              <div>
-                <div class="feat-title">Customizable appearance</div>
-                <div class="feat-desc">Signature color, background, padding, fade-in frames, dimensions</div>
-              </div>
-            </li>
-            <li>
-              <span class="bullet">&rarr;</span>
-              <div>
-                <div class="feat-title">Runtime integration</div>
-                <div class="feat-desc">SignatureRuntimeClient connects to ve-animesign-pdf service with auto-retry and configurable timeout</div>
-              </div>
-            </li>
-            <li>
-              <span class="bullet">&rarr;</span>
-              <div>
-                <div class="feat-title">PDF embedding</div>
-                <div class="feat-desc">Signature renders as Image component in the json-render spec — works with contracts, invoices, letters</div>
-              </div>
-            </li>
-          </ul>
+
+        <!-- Aam Sltman - flowing, rounded -->
+        <div class="sig-card">
+          <svg viewBox="0 0 220 70" xmlns="http://www.w3.org/2000/svg">
+            <path class="sig-pen-path" d="M15,55 C15,25 25,15 40,15 S65,25 50,40 C40,50 20,55 40,55 S65,45 65,35 M75,35 C75,20 85,15 95,20 S105,40 95,50 C88,55 78,52 85,45 M110,55 C115,20 130,10 145,25 S155,50 165,35 C175,20 185,25 195,40 S200,55 205,45" />
+          </svg>
+          <div class="sig-line"></div>
+          <div class="sig-name">Aam Sltman</div>
+        </div>
+
+        <!-- Jteve Sob - sharp, decisive -->
+        <div class="sig-card">
+          <svg viewBox="0 0 220 70" xmlns="http://www.w3.org/2000/svg">
+            <path class="sig-pen-path" d="M20,15 C20,15 30,15 30,25 S20,35 30,35 S40,30 35,40 C30,50 15,55 25,55 M45,15 L45,55 M45,15 L65,15 M45,35 L60,35 M80,55 C80,20 95,10 110,20 S120,50 130,35 C135,25 145,20 150,30 S150,55 160,40 L175,15 M175,55 L200,15" />
+          </svg>
+          <div class="sig-line"></div>
+          <div class="sig-name">Jteve Sob</div>
+        </div>
+
+        <!-- Cim Took - elegant, looping -->
+        <div class="sig-card">
+          <svg viewBox="0 0 220 70" xmlns="http://www.w3.org/2000/svg">
+            <path class="sig-pen-path" d="M25,15 L15,55 M15,15 L35,15 M50,55 C40,55 35,45 35,35 S45,15 60,15 S75,25 75,35 S65,55 50,55 M90,15 L90,55 M90,25 C90,15 105,12 110,20 S105,40 110,45 C115,50 120,45 115,35 M135,15 L135,55 L150,15 L165,55 M175,20 C180,10 200,10 200,25 S180,35 200,45 C210,55 195,60 180,55" />
+          </svg>
+          <div class="sig-line"></div>
+          <div class="sig-name">Cim Took</div>
+        </div>
+
+        <!-- Yours Here - interactive feel -->
+        <div class="sig-card yours">
+          <svg viewBox="0 0 220 70" xmlns="http://www.w3.org/2000/svg">
+            <path class="sig-pen-path" d="M30,20 C40,15 60,15 70,25 S75,45 65,50 C55,55 35,50 40,40 S60,30 80,35 M95,30 Q110,10 125,30 T155,30 M165,20 L175,50 M168,35 L182,35" />
+            <text x="50" y="62" fill="#555" font-size="9" font-family="sans-serif" font-style="italic">your signature here</text>
+          </svg>
+          <div class="sig-line"></div>
+          <div class="sig-name">Yours Here</div>
+        </div>
+      </div>
+
+      <!-- Info Cards -->
+      <div class="sig-info">
+        <div class="sig-info-card">
+          <h4>Output Formats</h4>
+          <p>Render signatures as static images for PDFs, animated loops for web previews, or shareable GIFs for messaging.</p>
+          <div class="format-badges">
+            <span class="format-badge png">PNG</span>
+            <span class="format-badge mp4">MP4</span>
+            <span class="format-badge gif">GIF</span>
+          </div>
+        </div>
+        <div class="sig-info-card">
+          <h4>Customizable</h4>
+          <p>Control signature color, background, padding, fade-in frames, and dimensions. Each signature gets a unique pen-writing animation.</p>
+        </div>
+        <div class="sig-info-card">
+          <h4>Runtime Integration</h4>
+          <p>SignatureRuntimeClient connects to the ve-animesign-pdf service with auto-retry (2x) and configurable timeout (default 120s).</p>
+        </div>
+        <div class="sig-info-card">
+          <h4>PDF Embedding</h4>
+          <p>Rendered signatures become Image components in the json-render spec. Works with contracts, invoices, letters, and any document type.</p>
         </div>
       </div>
     </div>

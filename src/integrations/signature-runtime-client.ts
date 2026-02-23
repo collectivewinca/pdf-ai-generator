@@ -1,4 +1,4 @@
-export type SignatureRenderFormat = 'png' | 'mp4';
+export type SignatureRenderFormat = 'png' | 'mp4' | 'gif';
 
 export type SignatureRenderProps = {
   background?: string;
