@@ -3,7 +3,7 @@ import path from 'path';
 import cors from 'cors';
 import { createCatalog, generateCatalogPrompt } from '@json-render/core';
 import { renderToBuffer, renderToStream, standardComponentDefinitions, defineRegistry, schema } from '@json-render/react-pdf';
-import { AIAssistant } from './src/ai-assistant/index';
+import { AIAssistant, pdfTypes, examplePrompts } from './src/ai-assistant/index';
 import { DeepseekReal } from './src/ai/deepseek-real';
 
 const app = express();
@@ -12,6 +12,16 @@ const port = process.env.PORT ? parseInt(process.env.PORT) : 3005;
 const deepseekKey = process.env.DEEPSEEK_API_KEY || '';
 const assistant = deepseekKey ? new AIAssistant(deepseekKey) : null;
 const deepseek = deepseekKey ? new DeepseekReal(deepseekKey) : null;
+const signatureRuntimeUrl = process.env.SIGNATURE_RUNTIME_URL || 'http://127.0.0.1:3210';
+const renderApiKey = process.env.RENDER_API_KEY || '';
+
+const signatureHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {};
+  if (renderApiKey) {
+    headers['X-Render-Key'] = renderApiKey;
+  }
+  return headers;
+};
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -64,8 +74,11 @@ app.get('/api/info', (req, res) => {
     endpoints: {
       '/api/health': 'GET - Health check',
       '/api/catalog': 'GET - View available PDF components and their props',
+      '/api/assistant/types': 'GET - List supported PDF document types',
       '/api/assistant/chat': 'POST - Chat with AI assistant',
       '/api/render': 'POST - Render a json-render spec to PDF file',
+      '/api/signature/compositions': 'GET - List available signature runtime compositions',
+      '/api/signature/render': 'POST - Render signature/stamp asset via ve-animesign runtime',
       '/api/generate': 'POST - Full pipeline: describe → AI → PDF file',
       '/api/complete-workflow': 'POST - Full pipeline: describe → AI → JSON spec (no render)'
     }
@@ -89,6 +102,63 @@ app.get('/api/catalog', (req, res) => {
     components: Object.keys(standardComponentDefinitions),
     prompt: catalogPrompt
   });
+});
+
+app.get('/api/assistant/types', (req, res) => {
+  res.json({
+    types: pdfTypes,
+    examples: examplePrompts
+  });
+});
+
+app.get('/api/signature/compositions', async (req, res) => {
+  try {
+    const response = await fetch(`${signatureRuntimeUrl}/compositions`, {
+      headers: signatureHeaders()
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.error || 'Failed to fetch signature compositions'
+      });
+    }
+
+    res.json(data);
+  } catch (error: any) {
+    res.status(502).json({
+      error: 'Signature runtime unavailable',
+      detail: error.message
+    });
+  }
+});
+
+app.post('/api/signature/render', async (req, res) => {
+  try {
+    const response = await fetch(`${signatureRuntimeUrl}/render`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...signatureHeaders()
+      },
+      body: JSON.stringify(req.body || {})
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.error || 'Signature render failed',
+        requestId: data?.requestId
+      });
+    }
+
+    res.json(data);
+  } catch (error: any) {
+    res.status(502).json({
+      error: 'Signature runtime unavailable',
+      detail: error.message
+    });
+  }
 });
 
 // Chat with AI assistant
