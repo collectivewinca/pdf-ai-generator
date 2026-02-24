@@ -22,6 +22,7 @@
   "dependencies": {
     "@json-render/core": "^0.1.0",
     "@json-render/react": "^0.1.0",
+    "@json-render/react-pdf": "^0.9.1",
     "@react-pdf/renderer": "^4.3.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
