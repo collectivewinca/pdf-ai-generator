@@ -1,5 +1,7 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
+import crypto from 'crypto';
 import cors from 'cors';
 import { createCatalog, generateCatalogPrompt } from '@json-render/core';
 import { renderToBuffer, renderToStream, standardComponentDefinitions, defineRegistry, schema } from '@json-render/react-pdf';
@@ -59,9 +61,51 @@ async function replaceSignaturePlaceholders(spec: any): Promise<any> {
   return updated;
 }
 
+// --- Sanitize AI-generated specs (remove null elements, fix broken refs, default props) ---
+function sanitizeSpec(spec: any): any {
+  if (!spec?.elements || !spec?.root) return spec;
+  const elements: Record<string, any> = {};
+  // Copy valid elements, ensure props exist
+  for (const [id, el] of Object.entries(spec.elements)) {
+    if (!el || typeof el !== 'object') continue;
+    const element = el as any;
+    elements[id] = {
+      ...element,
+      props: element.props || {},
+      children: Array.isArray(element.children) ? element.children : [],
+    };
+  }
+  // Remove children references to non-existent elements
+  for (const id of Object.keys(elements)) {
+    elements[id].children = elements[id].children.filter((cid: string) => elements[cid]);
+  }
+  return { ...spec, elements };
+}
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
+
+// --- Shareable PDF renders directory ---
+const rendersDir = path.join(process.cwd(), 'public', 'renders');
+fs.mkdirSync(rendersDir, { recursive: true });
+
+// Clean up renders older than 24 hours on startup and every hour
+function cleanOldRenders() {
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  try {
+    for (const file of fs.readdirSync(rendersDir)) {
+      const filePath = path.join(rendersDir, file);
+      const stat = fs.statSync(filePath);
+      if (stat.mtimeMs < cutoff) {
+        fs.unlinkSync(filePath);
+        console.log('Cleaned old render:', file);
+      }
+    }
+  } catch {}
+}
+cleanOldRenders();
+setInterval(cleanOldRenders, 60 * 60 * 1000);
 
 // --- json-render Catalog ---
 
@@ -124,7 +168,8 @@ app.get('/api/info', (req, res) => {
       '/api/render': 'POST - Render a json-render spec to PDF file',
       '/api/signature/compositions': 'GET - List available signature runtime compositions',
       '/api/signature/render': 'POST - Render signature/stamp asset via ve-animesign runtime',
-      '/api/generate': 'POST - Full pipeline: describe → AI → PDF file',
+      '/api/generate': 'POST - Full pipeline: describe → AI → PDF file (binary download)',
+      '/api/generate-link': 'POST - Full pipeline: describe → AI → shareable PDF URL (24h TTL)',
       '/api/complete-workflow': 'POST - Full pipeline: describe → AI → JSON spec (no render)'
     }
   });
@@ -237,7 +282,7 @@ app.post('/api/render', async (req, res) => {
     }
 
     console.log('Rendering PDF from json-render spec...');
-    const buffer = await renderToBuffer(spec);
+    const buffer = await renderToBuffer(sanitizeSpec(spec));
     const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
 
     const name = filename || 'document.pdf';
@@ -290,7 +335,7 @@ app.post('/api/generate', async (req, res) => {
     const finalSpec = await replaceSignaturePlaceholders(pdfSpec);
 
     console.log('Rendering PDF via json-render...');
-    const buffer = await renderToBuffer(finalSpec);
+    const buffer = await renderToBuffer(sanitizeSpec(finalSpec));
     const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -299,6 +344,68 @@ app.post('/api/generate', async (req, res) => {
     res.send(buf);
   } catch (error: any) {
     console.error('Generate error:', error.message);
+    res.status(500).json({ error: 'PDF generation failed: ' + error.message });
+  }
+});
+
+// Full pipeline: describe → AI → shareable PDF link
+app.post('/api/generate-link', async (req, res) => {
+  if (!deepseek) {
+    return res.status(503).json({
+      error: 'AI not configured',
+      hint: 'Set DEEPSEEK_API_KEY environment variable'
+    });
+  }
+  try {
+    const { message, pdfType, description } = req.body;
+    if (!message && !description) {
+      return res.status(400).json({
+        error: 'Provide either message (natural language) or pdfType + description'
+      });
+    }
+
+    let resolvedType: string;
+    let resolvedDescription: string;
+    let filename: string;
+
+    if (message && assistant) {
+      const request = await assistant.generateRequest(message);
+      resolvedType = request.pdfType;
+      resolvedDescription = request.description;
+      filename = request.filename;
+    } else {
+      resolvedType = pdfType || 'document';
+      resolvedDescription = description || message || '';
+      filename = (resolvedType || 'document') + '.pdf';
+    }
+
+    console.log('Generating PDF spec via AI (' + resolvedType + ')...');
+    const userPrompt = `Generate a ${resolvedType} PDF document.\n\nREQUIREMENTS:\n${resolvedDescription}\n\nGenerate the JSON spec now:`;
+    const pdfSpec = await deepseek.generatePdfJson(SPEC_SYSTEM_PROMPT + '\n\n' + userPrompt);
+
+    const finalSpec = await replaceSignaturePlaceholders(pdfSpec);
+
+    console.log('Rendering PDF via json-render...');
+    const buffer = await renderToBuffer(sanitizeSpec(finalSpec));
+    const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+
+    const id = crypto.randomBytes(8).toString('hex');
+    const pdfFilename = `${id}.pdf`;
+    fs.writeFileSync(path.join(rendersDir, pdfFilename), buf);
+
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers['x-forwarded-host'] || req.get('host');
+    const url = `${protocol}://${host}/renders/${pdfFilename}`;
+
+    res.json({
+      url,
+      filename,
+      pdfType: resolvedType,
+      size: buf.length,
+      expiresIn: '24 hours'
+    });
+  } catch (error: any) {
+    console.error('Generate-link error:', error.message);
     res.status(500).json({ error: 'PDF generation failed: ' + error.message });
   }
 });
@@ -345,7 +452,7 @@ app.post('/api/complete-workflow', async (req, res) => {
       pdfType: resolvedType,
       description: resolvedDescription,
       filename,
-      spec: finalSpec
+      spec: sanitizeSpec(finalSpec)
     });
   } catch (error: any) {
     res.status(500).json({ error: 'Workflow failed: ' + error.message });
