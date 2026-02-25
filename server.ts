@@ -7,14 +7,20 @@ import { createCatalog, generateCatalogPrompt } from '@json-render/core';
 import { renderToBuffer, renderToStream, standardComponentDefinitions, defineRegistry, schema } from '@json-render/react-pdf';
 import { AIAssistant, pdfTypes, examplePrompts } from './src/ai-assistant/index';
 import { DeepseekReal } from './src/ai/deepseek-real';
+import { GeminiProvider } from './src/ai/gemini';
 import { SignatureRuntimeClient } from './src/integrations/signature-runtime-client';
 
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3005;
 
+// AI provider: prefer Gemini, fall back to DeepSeek
+const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
 const deepseekKey = process.env.DEEPSEEK_API_KEY || '';
-const assistant = deepseekKey ? new AIAssistant(deepseekKey) : null;
-const deepseek = deepseekKey ? new DeepseekReal(deepseekKey) : null;
+const aiKey = geminiKey || deepseekKey;
+const aiProvider = geminiKey
+  ? new GeminiProvider(geminiKey)
+  : deepseekKey ? new DeepseekReal(deepseekKey) : null;
+const assistant = aiKey ? new AIAssistant(aiKey) : null;
 const signatureRuntimeUrl = process.env.SIGNATURE_RUNTIME_URL || 'http://127.0.0.1:3210';
 const renderApiKey = process.env.RENDER_API_KEY || '';
 
@@ -48,7 +54,13 @@ async function replaceSignaturePlaceholders(spec: any): Promise<any> {
     retries: 1,
   });
 
-  const result = await sigClient.renderSignature({ format: 'png' });
+  const result = await sigClient.renderSignature({
+    format: 'png',
+    props: {
+      background: 'transparent',
+      signatureColor: '#1a1a2e',
+    },
+  });
   console.log('Signature rendered:', result.url);
 
   const updated = { ...spec, elements: { ...elements } };
@@ -181,7 +193,8 @@ app.get('/api/health', (req, res) => {
     version: '4.0.0',
     engine: 'json-render',
     timestamp: new Date().toISOString(),
-    aiEnabled: !!deepseekKey,
+    aiEnabled: !!aiProvider,
+    aiProvider: geminiKey ? 'gemini-2.5-pro' : deepseekKey ? 'deepseek-chat' : 'none',
     components: Object.keys(standardComponentDefinitions).length
   });
 });
@@ -256,7 +269,7 @@ app.post('/api/assistant/chat', async (req, res) => {
   if (!assistant) {
     return res.status(503).json({
       error: 'AI assistant not configured',
-      hint: 'Set DEEPSEEK_API_KEY environment variable'
+      hint: 'Set GEMINI_API_KEY or DEEPSEEK_API_KEY environment variable'
     });
   }
   try {
@@ -298,10 +311,10 @@ app.post('/api/render', async (req, res) => {
 
 // Full pipeline: describe → AI → rendered PDF file
 app.post('/api/generate', async (req, res) => {
-  if (!deepseek) {
+  if (!aiProvider) {
     return res.status(503).json({
       error: 'AI not configured',
-      hint: 'Set DEEPSEEK_API_KEY environment variable'
+      hint: 'Set GEMINI_API_KEY or DEEPSEEK_API_KEY environment variable'
     });
   }
   try {
@@ -329,7 +342,7 @@ app.post('/api/generate', async (req, res) => {
 
     console.log('Generating PDF spec via AI (' + resolvedType + ')...');
     const userPrompt = `Generate a ${resolvedType} PDF document.\n\nREQUIREMENTS:\n${resolvedDescription}\n\nGenerate the JSON spec now:`;
-    const pdfSpec = await deepseek.generatePdfJson(SPEC_SYSTEM_PROMPT + '\n\n' + userPrompt);
+    const pdfSpec = await aiProvider.generatePdfJson(SPEC_SYSTEM_PROMPT + '\n\n' + userPrompt);
 
     // Replace signature placeholders if present
     const finalSpec = await replaceSignaturePlaceholders(pdfSpec);
@@ -350,10 +363,10 @@ app.post('/api/generate', async (req, res) => {
 
 // Full pipeline: describe → AI → shareable PDF link
 app.post('/api/generate-link', async (req, res) => {
-  if (!deepseek) {
+  if (!aiProvider) {
     return res.status(503).json({
       error: 'AI not configured',
-      hint: 'Set DEEPSEEK_API_KEY environment variable'
+      hint: 'Set GEMINI_API_KEY or DEEPSEEK_API_KEY environment variable'
     });
   }
   try {
@@ -381,7 +394,7 @@ app.post('/api/generate-link', async (req, res) => {
 
     console.log('Generating PDF spec via AI (' + resolvedType + ')...');
     const userPrompt = `Generate a ${resolvedType} PDF document.\n\nREQUIREMENTS:\n${resolvedDescription}\n\nGenerate the JSON spec now:`;
-    const pdfSpec = await deepseek.generatePdfJson(SPEC_SYSTEM_PROMPT + '\n\n' + userPrompt);
+    const pdfSpec = await aiProvider.generatePdfJson(SPEC_SYSTEM_PROMPT + '\n\n' + userPrompt);
 
     const finalSpec = await replaceSignaturePlaceholders(pdfSpec);
 
@@ -412,10 +425,10 @@ app.post('/api/generate-link', async (req, res) => {
 
 // Full pipeline → JSON spec only (no render)
 app.post('/api/complete-workflow', async (req, res) => {
-  if (!deepseek) {
+  if (!aiProvider) {
     return res.status(503).json({
       error: 'AI not configured',
-      hint: 'Set DEEPSEEK_API_KEY environment variable'
+      hint: 'Set GEMINI_API_KEY or DEEPSEEK_API_KEY environment variable'
     });
   }
   try {
@@ -443,7 +456,7 @@ app.post('/api/complete-workflow', async (req, res) => {
 
     console.log('Generating PDF spec via AI (' + resolvedType + ')...');
     const userPrompt = `Generate a ${resolvedType} PDF document.\n\nREQUIREMENTS:\n${resolvedDescription}\n\nGenerate the JSON spec now:`;
-    const pdfSpec = await deepseek.generatePdfJson(SPEC_SYSTEM_PROMPT + '\n\n' + userPrompt);
+    const pdfSpec = await aiProvider.generatePdfJson(SPEC_SYSTEM_PROMPT + '\n\n' + userPrompt);
 
     // Replace signature placeholders if present
     const finalSpec = await replaceSignaturePlaceholders(pdfSpec);
@@ -461,6 +474,6 @@ app.post('/api/complete-workflow', async (req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log('PDF AI Generator API v4 (json-render) running on http://0.0.0.0:' + port);
-  console.log('AI enabled: ' + !!deepseekKey);
+  console.log('AI provider: ' + (geminiKey ? 'Gemini Pro' : deepseekKey ? 'DeepSeek' : 'none'));
   console.log('Components: ' + Object.keys(standardComponentDefinitions).join(', '));
 });
