@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignPDF Project Brief — VE LAB</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0a;
+      --card: #111;
+      --border: #222;
+      --muted: #888;
+      --white: #f0f0f0;
+      --amber: #fbbf24;
+      --green: #10b981;
+      --blue: #60a5fa;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', monospace;
+    }
+    body { font-family: var(--font); background: var(--bg); color: var(--white); line-height: 1.7; }
+    .container { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+
+    header { padding: 60px 0 40px; text-align: center; border-bottom: 1px solid var(--border); }
+    header .badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--green); border: 1px solid rgba(16,185,129,0.3); padding: 5px 14px; border-radius: 100px; margin-bottom: 20px; text-transform: uppercase; }
+    header h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+    header p { color: var(--muted); font-size: 15px; max-width: 550px; margin: 0 auto 24px; }
+    header .links { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    header .links a { display: inline-block; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 8px; text-decoration: none; transition: all 0.2s; }
+    header .links .primary { background: var(--amber); color: #000; }
+    header .links .primary:hover { background: #fcd34d; }
+    header .links .secondary { border: 1px solid var(--border); color: var(--white); }
+    header .links .secondary:hover { border-color: var(--amber); }
+
+    section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+    h2 { font-size: 22px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    h2 .icon { font-size: 18px; }
+    h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--amber); }
+    p { margin-bottom: 14px; font-size: 14px; color: #ccc; }
+    ul { margin: 0 0 16px 20px; }
+    li { font-size: 14px; color: #ccc; margin-bottom: 6px; }
+    li strong { color: var(--white); }
+
+    .video-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin: 20px 0; }
+    @media (max-width: 640px) { .video-row { grid-template-columns: 1fr; } }
+    .video-row video { width: 100%; border-radius: 8px; border: 1px solid var(--border); }
+    .video-label { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; }
+
+    .arch-diagram {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: #aaa;
+      overflow-x: auto;
+      white-space: pre;
+      margin: 16px 0;
+    }
+    .arch-diagram .highlight { color: var(--amber); }
+    .arch-diagram .green { color: var(--green); }
+
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; background: var(--card); color: var(--amber); font-weight: 600; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 14px; border-bottom: 1px solid #1a1a1a; color: #ccc; }
+    td:first-child { color: var(--white); font-weight: 500; }
+    tr:hover td { background: rgba(251,191,36,0.03); }
+
+    code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: #1a1a1a;
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: var(--amber);
+    }
+    pre {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: #ccc;
+      margin: 12px 0;
+    }
+    pre .cmd { color: var(--green); }
+    pre .str { color: var(--amber); }
+    pre .key { color: var(--blue); }
+
+    .flow-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0; }
+    @media (max-width: 640px) { .flow-steps { grid-template-columns: 1fr; } }
+    .flow-step { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .flow-step .num { font-size: 28px; font-weight: 800; color: var(--amber); font-family: var(--mono); }
+    .flow-step h4 { font-size: 14px; margin: 8px 0 6px; }
+    .flow-step p { font-size: 12px; color: var(--muted); margin: 0; }
+
+    .sample-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin: 16px 0; }
+    .sample-card { display: block; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; text-decoration: none; color: var(--white); transition: all 0.2s; }
+    .sample-card:hover { border-color: var(--amber); transform: translateY(-2px); }
+    .sample-card .type { font-size: 13px; font-weight: 600; }
+    .sample-card .meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .sample-card .tag { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 4px; margin-top: 8px; }
+    .sample-card .tag.pdf { background: rgba(251,191,36,0.12); color: var(--amber); }
+    .sample-card .tag.signed { background: rgba(16,185,129,0.15); color: var(--green); }
+
+    footer { padding: 32px 0; text-align: center; border-top: 1px solid var(--border); }
+    footer p { font-size: 12px; color: var(--muted); }
+    footer a { color: var(--amber); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <span class="badge">VE LAB Project</span>
+    <h1>SignPDF</h1>
+    <p>AI-generated documents with animated signature artwork. From natural language prompt to signed PDF in seconds.</p>
+    <div class="links">
+      <a href="/signed-demo.html" class="primary">View Animated Demo</a>
+      <a href="/" class="secondary">Landing Page</a>
+      <a href="https://github.com/collectivewinca/pdf-ai-generator" class="secondary" target="_blank">GitHub</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- What It Does -->
+  <section>
+    <h2>What It Does</h2>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="num">01</div>
+        <h4>Describe your document</h4>
+        <p>"Create a signed business letter from VE LAB to Apple about AI partnership"</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">02</div>
+        <h4>AI generates it</h4>
+        <p>Gemini 2.5 Pro creates a structured document spec with signature placeholder</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">03</div>
+        <h4>Signature embeds</h4>
+        <p>Animated signature renders as PNG via ve-animesign, embeds in the final PDF</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signature Animation -->
+  <section>
+    <h2>Signature Animations</h2>
+    <p>Rendered in real-time by the ve-animesign Remotion engine. The signature composition draws with ink animation; the stamp composition applies an approval seal.</p>
+    <div class="video-row">
+      <div>
+        <video autoplay loop muted playsinline>
+          <source src="/assets/signature-animation.mp4" type="video/mp4">
+        </video>
+        <div class="video-label">Handwritten Signature — 15 seconds, 30fps</div>
+      </div>
+      <div>
+        <video autoplay loop muted playsinline>
+          <source src="/assets/stamp-animation.mp4" type="video/mp4">
+        </video>
+        <div class="video-label">Approval Stamp — 3 seconds, 30fps</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section>
+    <h2>Architecture</h2>
+    <div class="arch-diagram"><span class="highlight">signpdf.minyvinyl.com</span>  (Caddy HTTPS + AutoSSH tunnel from Hetzner)
+         │
+    ┌────┼──────────────┐
+    │    │              │
+<span class="green">PDF API</span>    <span class="green">Animesign</span>     <span class="green">PicoClaw</span>
+ :3005       :3210        :18790
+Express    Remotion     Telegram Bot
+Gemini Pro  Signature
+    │         ▲
+    └─────────┘  renders signature PNG
+                 on __SIGNATURE_PLACEHOLDER__</div>
+
+    <table>
+      <tr><th>Layer</th><th>Technology</th></tr>
+      <tr><td>AI Provider</td><td>Gemini 2.5 Pro (OpenAI-compatible endpoint)</td></tr>
+      <tr><td>PDF Engine</td><td>json-render + react-pdf</td></tr>
+      <tr><td>Signature Animation</td><td>Remotion (ve-animesign-pdf)</td></tr>
+      <tr><td>Server</td><td>Express.js + TypeScript</td></tr>
+      <tr><td>Hosting</td><td>exe.dev VM, Caddy HTTPS via Hetzner tunnel</td></tr>
+      <tr><td>Domain</td><td>signpdf.minyvinyl.com (Cloudflare DNS)</td></tr>
+    </table>
+  </section>
+
+  <!-- API -->
+  <section>
+    <h2>API Endpoints</h2>
+    <table>
+      <tr><th>Endpoint</th><th>Method</th><th>Description</th></tr>
+      <tr><td><code>/api/health</code></td><td>GET</td><td>Health check with AI provider info</td></tr>
+      <tr><td><code>/api/generate</code></td><td>POST</td><td>Generate PDF (binary download)</td></tr>
+      <tr><td><code>/api/generate-link</code></td><td>POST</td><td>Generate PDF (shareable URL, 24h TTL)</td></tr>
+      <tr><td><code>/api/complete-workflow</code></td><td>POST</td><td>Generate JSON spec only (no render)</td></tr>
+      <tr><td><code>/api/render</code></td><td>POST</td><td>Render a pre-built spec to PDF</td></tr>
+      <tr><td><code>/api/signature/render</code></td><td>POST</td><td>Render signature/stamp asset directly</td></tr>
+    </table>
+
+    <h3>Example</h3>
+    <pre><span class="cmd">curl</span> -X POST https://signpdf.minyvinyl.com/api/generate-link \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d '{<span class="key">"message"</span>:<span class="str">"Create a signed invoice from VE LAB for AI consulting, $4500"</span>}'
+
+<span class="key">Response:</span>
+{
+  <span class="key">"url"</span>: <span class="str">"https://signpdf.minyvinyl.com/renders/9cdd6d1e.pdf"</span>,
+  <span class="key">"filename"</span>: <span class="str">"VE-LAB-Invoice.pdf"</span>,
+  <span class="key">"pdfType"</span>: <span class="str">"invoice"</span>,
+  <span class="key">"size"</span>: 61736,
+  <span class="key">"expiresIn"</span>: <span class="str">"24 hours"</span>
+}</pre>
+  </section>
+
+  <!-- Samples -->
+  <section>
+    <h2>Sample Gallery</h2>
+    <p>All generated by Gemini 2.5 Pro. Signed documents include embedded transparent signature artwork.</p>
+    <div class="sample-grid">
+      <a href="/samples/signed-letter.pdf" class="sample-card" target="_blank">
+        <div class="type">Signed Letter</div>
+        <div class="meta">VE LAB &rarr; Acme Corp</div>
+        <span class="tag signed">SIGNED</span>
+      </a>
+      <a href="/samples/signed-invoice.pdf" class="sample-card" target="_blank">
+        <div class="type">Signed Invoice</div>
+        <div class="meta">AI Consulting &bull; $4,500</div>
+        <span class="tag signed">SIGNED</span>
+      </a>
+      <a href="/samples/invoice.pdf" class="sample-card" target="_blank">
+        <div class="type">Invoice</div>
+        <div class="meta">VE LAB Creative Agency</div>
+        <span class="tag pdf">PDF</span>
+      </a>
+      <a href="/samples/resume.pdf" class="sample-card" target="_blank">
+        <div class="type">Resume</div>
+        <div class="meta">Maya Rodriguez</div>
+        <span class="tag pdf">PDF</span>
+      </a>
+      <a href="/samples/letter.pdf" class="sample-card" target="_blank">
+        <div class="type">Business Letter</div>
+        <div class="meta">Municipal Services</div>
+        <span class="tag pdf">PDF</span>
+      </a>
+      <a href="/samples/report.pdf" class="sample-card" target="_blank">
+        <div class="type">Data Report</div>
+        <div class="meta">AI Market 2026</div>
+        <span class="tag pdf">PDF</span>
+      </a>
+      <a href="/samples/receipt.pdf" class="sample-card" target="_blank">
+        <div class="type">Receipt</div>
+        <div class="meta">MINY Vinyl Shop</div>
+        <span class="tag pdf">PDF</span>
+      </a>
+      <a href="/samples/certificate.pdf" class="sample-card" target="_blank">
+        <div class="type">Certificate</div>
+        <div class="meta">AI Engineering</div>
+        <span class="tag pdf">PDF</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Repos -->
+  <section>
+    <h2>Repositories</h2>
+    <table>
+      <tr><th>Repo</th><th>Purpose</th></tr>
+      <tr><td><code>collectivewinca/pdf-ai-generator</code></td><td>Main API server + landing page + signed demo</td></tr>
+      <tr><td><code>collectivewinca/ve-animesign-pdf</code></td><td>Remotion signature/stamp animation engine</td></tr>
+      <tr><td><code>collectivewinca/ve-picobot</code></td><td>PicoClaw Telegram bot (pdf-generator skill)</td></tr>
+    </table>
+  </section>
+
+  <!-- Security & Blockchain -->
+  <section>
+    <h2>Security & Signature Control</h2>
+    <p>The current implementation is a working prototype. Before production use, the following enhancements are required:</p>
+
+    <h3>Signature Authorization</h3>
+    <ul>
+      <li><strong>Access control</strong> — Signature rendering must be gated behind authenticated sessions. Currently any API caller can trigger a signature render.</li>
+      <li><strong>Signature ownership</strong> — Each user/entity should have their own signature composition, not a shared default. Signature assets need to be tied to verified identities.</li>
+      <li><strong>Consent flow</strong> — Documents requiring signatures should include an explicit approval step before the signature is rendered and embedded.</li>
+      <li><strong>Rate limiting</strong> — Prevent abuse of the signature rendering endpoint.</li>
+    </ul>
+
+    <h3>Blockchain Signature Ledger</h3>
+    <p>We have a blockchain integration planned for the signature verification layer:</p>
+    <ul>
+      <li><strong>Immutable signature log</strong> — Every signature render event (who signed, what document, when) is recorded on-chain as a verifiable transaction.</li>
+      <li><strong>Document hash anchoring</strong> — The PDF's content hash is anchored to the blockchain at signing time, creating a tamper-proof audit trail.</li>
+      <li><strong>Verification endpoint</strong> — Anyone with a signed PDF can verify its authenticity by checking the document hash against the on-chain record.</li>
+      <li><strong>Non-repudiation</strong> — The blockchain ledger ensures signers cannot deny having signed a document, as the transaction is cryptographically linked to their identity.</li>
+    </ul>
+
+    <h3>Additional Security Measures</h3>
+    <ul>
+      <li><strong>Document encryption</strong> — Signed PDFs should support encryption at rest and password protection.</li>
+      <li><strong>Audit logging</strong> — Full server-side audit trail of all document generation and signature events.</li>
+      <li><strong>API key rotation</strong> — The render API key and signature runtime key need regular rotation and scoped permissions.</li>
+    </ul>
+  </section>
+
+  <!-- What's Next -->
+  <section>
+    <h2>What's Next</h2>
+    <ul>
+      <li><strong>Blockchain signature ledger</strong> — On-chain verification and non-repudiation for signed documents</li>
+      <li><strong>Multi-user signature management</strong> — Each signer gets their own verified signature composition</li>
+      <li><strong>More signature styles</strong> — Different compositions, company stamps, watermarks</li>
+      <li><strong>Template system</strong> — Pre-built document templates that users customize</li>
+      <li><strong>Batch generation</strong> — Generate multiple documents from a spreadsheet/CSV</li>
+      <li><strong>White-label API</strong> — Offer as a service for other apps to embed document generation</li>
+      <li><strong>GIF export</strong> — Animated signature as GIF for email signatures</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>
+  <p>Built by <a href="https://velab.ai">VE LAB</a> &mdash; February 2026</p>
+</footer>
+
+</body>
+</html>
