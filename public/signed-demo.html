@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signed Document Demo — PDF AI Generator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0a;
+      --card: #111111;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --muted: #888;
+      --white: #f5f5f5;
+      --amber: #fbbf24;
+      --green: #10b981;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--white);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Navigation */
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+      position: sticky;
+      top: 0;
+      background: rgba(10,10,10,0.95);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    nav .brand {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--amber);
+      text-decoration: none;
+    }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--white); }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 0 40px;
+    }
+    .hero .label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--green);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      padding: 6px 16px;
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 100px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Animation Showcase */
+    .showcase {
+      padding: 40px 0 60px;
+    }
+    .video-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    @media (max-width: 768px) {
+      .video-grid { grid-template-columns: 1fr; }
+    }
+    .video-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .video-card video {
+      width: 100%;
+      display: block;
+    }
+    .video-card .caption {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .video-card .caption h3 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .video-card .caption .tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--green);
+      background: rgba(16,185,129,0.12);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    /* Document Preview */
+    .document-section {
+      padding: 60px 0;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--amber);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+    .section-desc {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 32px;
+      max-width: 600px;
+    }
+
+    .doc-preview {
+      background: #ffffff;
+      color: #1a1a1a;
+      border-radius: 8px;
+      padding: 60px 50px;
+      max-width: 700px;
+      margin: 0 auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+      font-family: 'Georgia', 'Times New Roman', serif;
+      line-height: 1.8;
+      font-size: 14px;
+      position: relative;
+    }
+    .doc-preview .letterhead {
+      text-align: left;
+      margin-bottom: 40px;
+      font-family: var(--font);
+    }
+    .doc-preview .letterhead .company {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1a1a2e;
+      letter-spacing: 1px;
+    }
+    .doc-preview .letterhead .address {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+    .doc-preview .date {
+      color: #555;
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+    .doc-preview .recipient {
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #333;
+    }
+    .doc-preview .subject {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+    .doc-preview .body-text {
+      margin-bottom: 16px;
+      text-align: justify;
+    }
+    .doc-preview .closing {
+      margin-top: 30px;
+      margin-bottom: 8px;
+    }
+
+    .signature-block {
+      margin-top: 10px;
+      position: relative;
+    }
+    .signature-block .sig-line {
+      width: 200px;
+      height: 1px;
+      background: #ccc;
+      margin-bottom: 12px;
+    }
+    .signature-block video {
+      display: block;
+      width: 240px;
+      height: auto;
+      margin: -20px 0 -10px -10px;
+      mix-blend-mode: multiply;
+      filter: contrast(1.2) brightness(0.9);
+    }
+    .signature-block .sig-name {
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+    .signature-block .sig-title {
+      font-family: var(--font);
+      font-size: 11px;
+      color: #666;
+    }
+
+    /* How it works */
+    .how-section {
+      padding: 60px 0;
+      border-top: 1px solid var(--border);
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 32px;
+    }
+    @media (max-width: 768px) {
+      .steps { grid-template-columns: 1fr; }
+    }
+    .step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 24px;
+    }
+    .step .num {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--amber);
+      font-family: var(--mono);
+      margin-bottom: 12px;
+    }
+    .step h3 {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+    .step p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .step code {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: var(--surface);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--amber);
+    }
+
+    /* Downloads */
+    .downloads {
+      padding: 60px 0;
+      border-top: 1px solid var(--border);
+    }
+    .dl-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .dl-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-decoration: none;
+      color: var(--white);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .dl-card:hover {
+      border-color: var(--amber);
+      transform: translateY(-2px);
+    }
+    .dl-card .icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .dl-card .info h4 {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .dl-card .info span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .dl-card .badge {
+      margin-left: auto;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .dl-card .badge.pdf {
+      background: rgba(251,191,36,0.12);
+      color: var(--amber);
+    }
+    .dl-card .badge.signed {
+      background: rgba(16,185,129,0.15);
+      color: var(--green);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      text-align: center;
+    }
+    footer p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    footer a {
+      color: var(--amber);
+      text-decoration: none;
+    }
+
+    /* CTA */
+    .cta-btn {
+      display: inline-block;
+      background: var(--amber);
+      color: #000;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .cta-btn:hover {
+      background: var(--amber-light);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="container">
+      <a href="/" class="brand">SIGNPDF</a>
+      <div style="display:flex;gap:24px;align-items:center;">
+        <a href="/">Home</a>
+        <a href="#animations">Animations</a>
+        <a href="#document">Document</a>
+        <a href="#downloads">Downloads</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <span class="label">Live Animation Demo</span>
+      <h1>AI-Generated Documents<br>with Animated Signatures</h1>
+      <p>Watch the signature render in real-time, then see it embedded in a professional business letter — all generated by AI.</p>
+    </div>
+  </section>
+
+  <!-- Animation Showcase -->
+  <section id="animations" class="showcase">
+    <div class="container">
+      <div class="video-grid">
+        <div class="video-card">
+          <video autoplay loop muted playsinline>
+            <source src="/assets/signature-animation.mp4" type="video/mp4">
+          </video>
+          <div class="caption">
+            <h3>Signature Animation</h3>
+            <span class="tag">LIVE RENDER</span>
+          </div>
+        </div>
+        <div class="video-card">
+          <video autoplay loop muted playsinline>
+            <source src="/assets/stamp-animation.mp4" type="video/mp4">
+          </video>
+          <div class="caption">
+            <h3>Approval Stamp</h3>
+            <span class="tag">LIVE RENDER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-section">
+    <div class="container">
+      <div class="section-label">How It Works</div>
+      <div class="section-title">From prompt to signed document</div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">01</div>
+          <h3>Describe your document</h3>
+          <p>Tell the AI what you need: <code>"Create a signed business letter to Apple about an AI partnership"</code></p>
+        </div>
+        <div class="step">
+          <div class="num">02</div>
+          <h3>AI generates the spec</h3>
+          <p>Gemini Pro creates a structured document spec with a <code>__SIGNATURE_PLACEHOLDER__</code> where the signature belongs.</p>
+        </div>
+        <div class="step">
+          <div class="num">03</div>
+          <h3>Signature renders + embeds</h3>
+          <p>The server renders the animated signature as a PNG via <code>ve-animesign</code> and embeds it in the final PDF.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Document Preview with Animated Signature -->
+  <section id="document" class="document-section">
+    <div class="container">
+      <div class="section-label">Live Preview</div>
+      <div class="section-title">Signed Business Letter</div>
+      <p class="section-desc">This is what the AI generates — a professional letter with the signature animation playing where it would appear in the final PDF.</p>
+
+      <div class="doc-preview">
+        <div class="letterhead">
+          <div class="company">VE LAB</div>
+          <div class="address">123 Innovation Drive, Future City, FC 98765<br>contact@velab.ai | velab.ai</div>
+        </div>
+
+        <div class="date">February 25, 2026</div>
+
+        <div class="recipient">
+          Tim Cook, CEO<br>
+          Apple Inc.<br>
+          One Apple Park Way<br>
+          Cupertino, CA 95014
+        </div>
+
+        <div class="subject">Re: Strategic AI Partnership Proposal</div>
+
+        <p class="body-text">Dear Mr. Cook,</p>
+
+        <p class="body-text">On behalf of VE LAB, I am writing to propose a strategic partnership between our organizations in the field of artificial intelligence. Our team has developed proprietary on-device AI models that excel in contextual understanding and generative content creation, all while prioritizing user privacy and computational efficiency.</p>
+
+        <p class="body-text">We see a powerful synergy between our AI frameworks and Apple's hardware and software platforms, particularly in enhancing Siri, supercharging creative tools, and enabling new forms of personalized computing that respect user data sovereignty.</p>
+
+        <p class="body-text">I would welcome the opportunity to discuss this partnership in greater detail at your earliest convenience. Our team is prepared to provide a comprehensive technical demonstration of our capabilities.</p>
+
+        <div class="closing">Sincerely,</div>
+
+        <div class="signature-block">
+          <video autoplay loop muted playsinline>
+            <source src="/assets/signature-animation.mp4" type="video/mp4">
+          </video>
+          <div class="sig-name">Alex Viegas</div>
+          <div class="sig-title">Founder & CEO, VE LAB</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:32px;">
+        <a href="/samples/signed-letter.pdf" class="cta-btn" target="_blank">Download as PDF</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-label">Sample Gallery</div>
+      <div class="section-title">Download generated samples</div>
+      <p class="section-desc">All documents generated by AI using Gemini Pro. Signed documents include embedded signature artwork.</p>
+
+      <div class="dl-grid">
+        <a href="/samples/signed-letter.pdf" class="dl-card" target="_blank">
+          <div class="icon">&#9997;</div>
+          <div class="info">
+            <h4>Signed Letter</h4>
+            <span>VE LAB to Acme Corp</span>
+          </div>
+          <span class="badge signed">SIGNED</span>
+        </a>
+        <a href="/samples/signed-invoice.pdf" class="dl-card" target="_blank">
+          <div class="icon">&#9997;</div>
+          <div class="info">
+            <h4>Signed Invoice</h4>
+            <span>AI Consulting &bull; $4,500</span>
+          </div>
+          <span class="badge signed">SIGNED</span>
+        </a>
+        <a href="/samples/invoice.pdf" class="dl-card" target="_blank">
+          <div class="icon">&#128196;</div>
+          <div class="info">
+            <h4>Invoice</h4>
+            <span>VE LAB Creative Agency</span>
+          </div>
+          <span class="badge pdf">PDF</span>
+        </a>
+        <a href="/samples/resume.pdf" class="dl-card" target="_blank">
+          <div class="icon">&#128196;</div>
+          <div class="info">
+            <h4>Resume</h4>
+            <span>Maya Rodriguez</span>
+          </div>
+          <span class="badge pdf">PDF</span>
+        </a>
+        <a href="/samples/letter.pdf" class="dl-card" target="_blank">
+          <div class="icon">&#128196;</div>
+          <div class="info">
+            <h4>Business Letter</h4>
+            <span>Municipal Services</span>
+          </div>
+          <span class="badge pdf">PDF</span>
+        </a>
+        <a href="/samples/report.pdf" class="dl-card" target="_blank">
+          <div class="icon">&#128196;</div>
+          <div class="info">
+            <h4>Data Report</h4>
+            <span>AI Market 2026</span>
+          </div>
+          <span class="badge pdf">PDF</span>
+        </a>
+        <a href="/samples/receipt.pdf" class="dl-card" target="_blank">
+          <div class="icon">&#128196;</div>
+          <div class="info">
+            <h4>Receipt</h4>
+            <span>MINY Vinyl Shop</span>
+          </div>
+          <span class="badge pdf">PDF</span>
+        </a>
+        <a href="/samples/certificate.pdf" class="dl-card" target="_blank">
+          <div class="icon">&#128196;</div>
+          <div class="info">
+            <h4>Certificate</h4>
+            <span>AI Engineering</span>
+          </div>
+          <span class="badge pdf">PDF</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>Built by <a href="https://velab.ai">VE LAB</a> &mdash; AI + Animated Signatures powered by <a href="/">signpdf.minyvinyl.com</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>
