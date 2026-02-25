@@ -5,6 +5,7 @@ import { createCatalog, generateCatalogPrompt } from '@json-render/core';
 import { renderToBuffer, renderToStream, standardComponentDefinitions, defineRegistry, schema } from '@json-render/react-pdf';
 import { AIAssistant, pdfTypes, examplePrompts } from './src/ai-assistant/index';
 import { DeepseekReal } from './src/ai/deepseek-real';
+import { SignatureRuntimeClient } from './src/integrations/signature-runtime-client';
 
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3005;
@@ -22,6 +23,41 @@ const signatureHeaders = (): Record<string, string> => {
   }
   return headers;
 };
+
+
+// --- Signature Placeholder Replacement ---
+const SIGNATURE_PLACEHOLDER = '__SIGNATURE_PLACEHOLDER__';
+
+async function replaceSignaturePlaceholders(spec: any): Promise<any> {
+  const elements = spec?.elements;
+  if (!elements) return spec;
+
+  const placeholderIds = Object.keys(elements).filter(
+    id => elements[id] && elements[id].type === 'Image' && elements[id].props?.src === SIGNATURE_PLACEHOLDER
+  );
+
+  if (placeholderIds.length === 0) return spec;
+
+  console.log('Signature placeholder detected, rendering signature...');
+  const sigClient = new SignatureRuntimeClient({
+    baseUrl: signatureRuntimeUrl,
+    apiKey: renderApiKey || undefined,
+    timeoutMs: 30000,
+    retries: 1,
+  });
+
+  const result = await sigClient.renderSignature({ format: 'png' });
+  console.log('Signature rendered:', result.url);
+
+  const updated = { ...spec, elements: { ...elements } };
+  for (const id of placeholderIds) {
+    updated.elements[id] = {
+      ...elements[id],
+      props: { ...elements[id].props, src: result.url },
+    };
+  }
+  return updated;
+}
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -57,6 +93,15 @@ RULES:
 - Use descriptive, meaningful element ids
 
 ${catalogPrompt}
+
+SIGNATURE SUPPORT:
+When the user requests a signed document, signature, or endorsement:
+- Add an Image element at the appropriate signature location (below closing text, above printed name)
+- Set the Image src to exactly "__SIGNATURE_PLACEHOLDER__" (the server will replace this with a real rendered signature)
+- Set width to 200 and height to 77
+- Add a Divider element above the signature block for visual separation
+- Optionally add a "Signature:" label Text element above the Image
+- If no signature is requested, do NOT include any __SIGNATURE_PLACEHOLDER__ elements
 
 IMPORTANT: Return ONLY the JSON spec. No explanations, no markdown fences.`;
 
@@ -241,8 +286,11 @@ app.post('/api/generate', async (req, res) => {
     const userPrompt = `Generate a ${resolvedType} PDF document.\n\nREQUIREMENTS:\n${resolvedDescription}\n\nGenerate the JSON spec now:`;
     const pdfSpec = await deepseek.generatePdfJson(SPEC_SYSTEM_PROMPT + '\n\n' + userPrompt);
 
+    // Replace signature placeholders if present
+    const finalSpec = await replaceSignaturePlaceholders(pdfSpec);
+
     console.log('Rendering PDF via json-render...');
-    const buffer = await renderToBuffer(pdfSpec);
+    const buffer = await renderToBuffer(finalSpec);
     const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -290,11 +338,14 @@ app.post('/api/complete-workflow', async (req, res) => {
     const userPrompt = `Generate a ${resolvedType} PDF document.\n\nREQUIREMENTS:\n${resolvedDescription}\n\nGenerate the JSON spec now:`;
     const pdfSpec = await deepseek.generatePdfJson(SPEC_SYSTEM_PROMPT + '\n\n' + userPrompt);
 
+    // Replace signature placeholders if present
+    const finalSpec = await replaceSignaturePlaceholders(pdfSpec);
+
     res.json({
       pdfType: resolvedType,
       description: resolvedDescription,
       filename,
-      spec: pdfSpec
+      spec: finalSpec
     });
   } catch (error: any) {
     res.status(500).json({ error: 'Workflow failed: ' + error.message });
